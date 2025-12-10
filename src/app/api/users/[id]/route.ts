@@ -26,3 +26,27 @@ export async function GET(req: NextRequest, context: Context) {
 		return NextResponse.json({ error: 'Error getting user' }, { status: 500 });
 	}
 }
+
+export async function PATCH(req: NextRequest, context: Context) {
+	try {
+		const { id } = await context.params;
+		const numericId = parseInt(id);
+		if (isNaN(numericId)) {
+			return NextResponse.json({ error: 'Invalid users ID' }, { status: 400 });
+		}
+		const body = await req.json();
+		const { name, email } = body;
+
+		const updatedUser = await prisma.user.update({
+			where: { id: numericId },
+			data: {
+				name: name,
+				email: email,
+			},
+		});
+		return NextResponse.json(updatedUser);
+	} catch (error) {
+		console.error('Request error', error);
+		return NextResponse.json({ error: 'Error getting user' }, { status: 500 });
+	}
+}
