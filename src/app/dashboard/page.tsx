@@ -1,26 +1,46 @@
 'use client';
 
 import { FormEvent } from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
+import type { User } from '@/types';
+import { FaPencilAlt, FaRegTrashAlt } from 'react-icons/fa';
 
 export default function Page() {
+	const [users, setUsers] = useState<User[]>([]);
 	const [email, setEmail] = useState('');
 	const [name, setName] = useState('');
 
 	async function handleSubmit(e: FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 		try {
-			await axios.post('/api/users', {
-				name,
-				email,
-			});
+			const newUsers = { name, email };
+			const response = await axios.post('/api/users', newUsers);
+			setUsers((prev) => [...prev, response.data]);
 			setName('');
 			setEmail('');
 		} catch (error) {
 			console.error('Error creating user:', error);
 		}
 	}
+
+	async function handleDelete(id: number) {
+		try {
+			await axios.delete(`/api/users/${id}`);
+			setUsers((prev) => prev.filter((user) => user.id !== id));
+		} catch (error) {
+			console.error('Error deleting user:', error);
+		}
+	}
+
+	useEffect(() => {
+		async function fetchUsers() {
+			const response = await axios.get('/api/users');
+			setUsers(response.data);
+		}
+		fetchUsers();
+	}, []);
 
 	return (
 		<div>
@@ -35,6 +55,44 @@ export default function Page() {
 					Add User
 				</button>
 			</form>
+
+			<Table className="">
+				<TableHeader>
+					<TableRow>
+						<TableHead className="w-[100px]">No</TableHead>
+						<TableHead>Nama</TableHead>
+						<TableHead>Email</TableHead>
+						<TableHead className="">Created At</TableHead>
+						<TableHead className="text-center">Action</TableHead>
+					</TableRow>
+				</TableHeader>
+				<TableBody>
+					{users.map((user, index) => (
+						<TableRow key={user.id}>
+							<TableCell className="font-medium">{index + 1}</TableCell>
+							<TableCell>{user.name}</TableCell>
+							<TableCell>{user.email}</TableCell>
+							<TableCell className="">
+								{new Date(user.createdAt).toLocaleString('id-ID', {
+									dateStyle: 'full',
+									timeStyle: 'short',
+								})}
+							</TableCell>
+
+							<TableCell className="flex gap-2 justify-center ">
+								<FaPencilAlt className="text-xl text-blue-500" />
+								<FaRegTrashAlt className="text-xl text-red-500" onClick={() => handleDelete(user.id)} />
+							</TableCell>
+						</TableRow>
+					))}
+				</TableBody>
+				<TableFooter>
+					<TableRow className="bg-gray-300">
+						<TableCell colSpan={4}>Total</TableCell>
+						<TableCell className="text-center ">$2,500.00</TableCell>
+					</TableRow>
+				</TableFooter>
+			</Table>
 		</div>
 	);
 }
