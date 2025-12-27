@@ -48,11 +48,54 @@ const productData: Prisma.ProductCreateInput[] = [
 	},
 ];
 
-export async function main() {
-	console.log('🌱 Starting seed...');
+const addressData: Prisma.AddressCreateInput[] = [
+	{
+		name: 'Rumah Utama',
+		phone: '081234567890',
+		addressLine: 'Jl. Sudirman No. 123',
+		city: 'Jakarta Selatan',
+		province: 'DKI Jakarta',
+		postalCode: '12190',
+		notes: 'Dekat dengan MRT Blok M',
+	},
+	{
+		name: 'Kantor',
+		phone: '081234567891',
+		addressLine: 'Jl. Gatot Subroto Kav. 52-53',
+		city: 'Jakarta Selatan',
+		province: 'DKI Jakarta',
+		postalCode: '12950',
+		notes: 'Gedung lantai 15, sebelah lift',
+	},
+	{
+		name: 'Rumah Orang Tua',
+		phone: '081234567892',
+		addressLine: 'Jl. Diponegoro No. 45',
+		city: 'Bandung',
+		province: 'Jawa Barat',
+		postalCode: '40115',
+		notes: 'Rumah warna putih, pagar hitam',
+	},
+	{
+		name: 'Kost',
+		phone: '081234567893',
+		addressLine: 'Jl. Gejayan No. 78',
+		city: 'Yogyakarta',
+		province: 'DI Yogyakarta',
+		postalCode: '55281',
+	},
+	{
+		name: 'Villa',
+		phone: '081234567894',
+		addressLine: 'Jl. Raya Ubud No. 100',
+		city: 'Gianyar',
+		province: 'Bali',
+		postalCode: '80571',
+		notes: 'Villa dengan kolam renang',
+	},
+];
 
-	// Seed Users
-	console.log('Creating users...');
+export async function main() {
 	for (const u of userData) {
 		const user = await prisma.user.upsert({
 			where: { email: u.email },
@@ -62,14 +105,14 @@ export async function main() {
 		console.log(`✅ Created/Updated user: ${user.name} (${user.email})`);
 	}
 
-	// Seed Products
-	console.log('Creating products...');
 	for (const p of productData) {
 		const product = await prisma.product.create({ data: p });
 		console.log(`✅ Created product: ${product.name} - Rp ${product.price.toLocaleString('id-ID')}`);
 	}
 
-	console.log('✨ Seed completed successfully!');
+	for (const a of addressData) {
+		await prisma.address.create({ data: a });
+	}
 }
 
 main()
