@@ -22,12 +22,22 @@ export default function Page() {
 	const [price, setPrice] = useState('');
 	const [name, setName] = useState('');
 	const [open, setOpen] = useState(false);
+	const [editing, setEditing] = useState<Product | null>(null);
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
+
 		try {
-			const res = await axios.post('/api/products', { name, price: Number(price) });
-			setProducts((prev) => [res.data.data, ...prev]);
+			const payload = { name, price: Number(price) };
+
+			if (editing) {
+				const res = await axios.patch(`/api/products/${editing.id}`, payload);
+				setProducts((prev) => prev.map((p) => (p.id === editing.id ? res.data.data : p)));
+				setEditing(null);
+			} else {
+				const res = await axios.post('/api/products', payload);
+				setProducts((prev) => [res.data.data, ...prev]);
+			}
 			setName('');
 			setPrice('');
 			setOpen(false);
@@ -45,6 +55,13 @@ export default function Page() {
 		}
 	}
 
+	function handleEditClick(product: Product) {
+		setEditing(product); // simpan product yang mau diedit
+		setName(product.name); // isi input name
+		setPrice(String(product.price)); // isi input price
+		setOpen(true); // buka dialog
+	}
+
 	useEffect(() => {
 		async function getProducts() {
 			const res = await axios.get('/api/products');
@@ -58,7 +75,12 @@ export default function Page() {
 		<div className="container mx-auto my-10">
 			<div className="w-full flex justify-between">
 				<h1>Product Page</h1>
-				<Dialog open={open} onOpenChange={setOpen}>
+				<Dialog
+					open={open}
+					onOpenChange={(v) => {
+						setOpen(v);
+					}}
+				>
 					<DialogTrigger asChild>
 						<Button type="button">
 							Add Product
@@ -69,18 +91,18 @@ export default function Page() {
 					<DialogContent>
 						<form onSubmit={handleSubmit}>
 							<DialogHeader>
-								<DialogTitle>Add Product</DialogTitle>
+								<DialogTitle>{editing ? 'Edit Product' : 'Add Product'}</DialogTitle>
 							</DialogHeader>
 
 							<div className="grid gap-4">
 								<div className="grid gap-3">
 									<Label htmlFor="name">Name</Label>
-									<Input id="name" name="name" value={name} onChange={(e) => setName(e.target.value)} />
+									<Input id="name" name="name" value={name} onChange={(e) => setName(e.target.value)} required />
 								</div>
 
 								<div className="grid gap-3">
 									<Label htmlFor="price">Price</Label>
-									<Input id="price" name="price" type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
+									<Input id="price" name="price" type="number" value={price} onChange={(e) => setPrice(e.target.value)} required />
 								</div>
 							</div>
 
@@ -91,7 +113,7 @@ export default function Page() {
 									</Button>
 								</DialogClose>
 
-								<Button type="submit">Save changes</Button>
+								<Button type="submit">{editing ? 'Update' : 'Save '}</Button>
 							</DialogFooter>
 						</form>
 					</DialogContent>
@@ -115,10 +137,10 @@ export default function Page() {
 								<TableCell>{idx + 1}</TableCell>
 								<TableCell>{product.name}</TableCell>
 								<TableCell>{product.price}</TableCell>
-								<TableCell>{product.createdAt}</TableCell>
-								<TableCell>{product.updatedAt}</TableCell>
+								<TableCell>{new Date(product.createdAt).toLocaleString()}</TableCell>
+								<TableCell>{new Date(product.updatedAt).toLocaleString()}</TableCell>
 								<TableCell className="flex justify-center gap-5">
-									<FaPencilAlt className="text-xl text-blue-500 cursor-pointer" />
+									<FaPencilAlt className="text-xl text-blue-500 cursor-pointer" onClick={() => handleEditClick(product)} />
 									<FaRegTrashAlt className="text-xl text-red-500 cursor-pointer" onClick={() => handleDelete(product.id)} />
 								</TableCell>
 							</TableRow>
