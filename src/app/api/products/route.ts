@@ -3,7 +3,9 @@ import prisma from '@/lib/prisma';
 
 export async function GET() {
 	try {
-		const products = await prisma.product.findMany();
+		const products = await prisma.product.findMany({
+			orderBy: { createdAt: 'desc' },
+		});
 		return NextResponse.json({ message: 'Success fetching products', data: products });
 	} catch (error) {
 		console.error('Request error', error);
