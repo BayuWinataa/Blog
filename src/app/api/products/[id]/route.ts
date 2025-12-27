@@ -49,3 +49,17 @@ export async function PATCH(req: NextRequest, { params }: params) {
 	}
 	return NextResponse.json({ message: 'success get products', data: product }, { status: 200 });
 }
+
+export async function DELETE(req: NextRequest, { params }: params) {
+	const id = (await params).id;
+	if (!id) {
+		return NextResponse.json({ message: 'failed get detail id product' }, { status: 500 });
+	}
+	const product = await prisma.product.delete({
+		where: { id },
+	});
+	if (!product) {
+		return NextResponse.json({ message: 'failed get product' }, { status: 500 });
+	}
+	return NextResponse.json({ message: 'success delete products' }, { status: 200 });
+}
