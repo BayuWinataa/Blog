@@ -36,6 +36,15 @@ export default function Page() {
 		}
 	}
 
+	async function handleDelete(id: string) {
+		try {
+			await axios.delete(`/api/products/${id}`);
+			setProducts((prev) => prev.filter((p) => p.id !== id));
+		} catch (error) {
+			console.error('delete failed', error);
+		}
+	}
+
 	useEffect(() => {
 		async function getProducts() {
 			const res = await axios.get('/api/products');
@@ -110,7 +119,7 @@ export default function Page() {
 								<TableCell>{product.updatedAt}</TableCell>
 								<TableCell className="flex justify-center gap-5">
 									<FaPencilAlt className="text-xl text-blue-500 cursor-pointer" />
-									<FaRegTrashAlt className="text-xl text-red-500 cursor-pointer" />
+									<FaRegTrashAlt className="text-xl text-red-500 cursor-pointer" onClick={() => handleDelete(product.id)} />
 								</TableCell>
 							</TableRow>
 						))}
