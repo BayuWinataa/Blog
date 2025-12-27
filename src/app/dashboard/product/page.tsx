@@ -1,11 +1,34 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FaPencilAlt, FaRegTrashAlt, FaPlus } from 'react-icons/fa';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
-export default function page() {
+type Product = {
+	id: string;
+	name: string;
+	price: number;
+	createdAt: string;
+	updatedAt: string;
+};
+
+export default function Page() {
+	const [products, setProducts] = useState<Product[]>([]);
+
+	useEffect(() => {
+		async function getProducts() {
+			const res = await axios.get('/api/products');
+			alert(res.data.message);
+			setProducts(res.data.data);
+		}
+		getProducts();
+	}, []);
+
 	return (
 		<div className="container mx-auto my-10">
 			<div className="w-full flex justify-between">
@@ -55,17 +78,19 @@ export default function page() {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						<TableRow>
-							<TableCell>1</TableCell>
-							<TableCell>bayu</TableCell>
-							<TableCell>20000</TableCell>
-							<TableCell>5 agustus 2025</TableCell>
-							<TableCell>5 agustus</TableCell>
-							<TableCell className="flex justify-center gap-5">
-								<FaPencilAlt className="text-xl text-blue-500 cursor-pointer" />
-								<FaRegTrashAlt className="text-xl text-red-500 cursor-pointer" />
-							</TableCell>
-						</TableRow>
+						{products.map((product, idx) => (
+							<TableRow key={product.id}>
+								<TableCell>{idx + 1}</TableCell>
+								<TableCell>{product.name}</TableCell>
+								<TableCell>{product.price}</TableCell>
+								<TableCell>{product.createdAt}</TableCell>
+								<TableCell>{product.updatedAt}</TableCell>
+								<TableCell className="flex justify-center gap-5">
+									<FaPencilAlt className="text-xl text-blue-500 cursor-pointer" />
+									<FaRegTrashAlt className="text-xl text-red-500 cursor-pointer" />
+								</TableCell>
+							</TableRow>
+						))}
 					</TableBody>
 				</Table>
 			</div>
