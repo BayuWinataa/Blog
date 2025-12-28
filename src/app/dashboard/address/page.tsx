@@ -1,3 +1,5 @@
+'use client';
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { FaPencilAlt, FaRegTrashAlt } from 'react-icons/fa';
@@ -5,8 +7,34 @@ import { Button } from '@/components/ui/button';
 import { DialogClose } from '@radix-ui/react-dialog';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui/input';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+
+type Address = {
+	id: number;
+	name: string;
+	phone: string;
+	addressLine: string;
+	city: string;
+	province: string;
+	postalCode?: string;
+	notes?: string;
+	createdAt: string;
+	updatedAt: string;
+};
 
 export default function Page() {
+	const [address, setAddress] = useState<Address[]>([]);
+
+	useEffect(() => {
+		const getAddress = async () => {
+			const res = await axios.get('/api/address');
+			const data = res.data.data;
+			setAddress(data);
+		};
+		getAddress();
+	}, []);
+
 	return (
 		<div className="container mx-auto my-10">
 			<div className="flex justify-between">
@@ -78,22 +106,24 @@ export default function Page() {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						<TableRow>
-							<TableCell>1</TableCell>
-							<TableCell>bayu</TableCell>
-							<TableCell>081232611222</TableCell>
-							<TableCell>jalan besar </TableCell>
-							<TableCell>medan</TableCell>
-							<TableCell>sumut</TableCell>
-							<TableCell>20851</TableCell>
-							<TableCell>di jalan besar itu loh</TableCell>
-							<TableCell>10 desember</TableCell>
-							<TableCell>10 desember</TableCell>
-							<TableCell className="flex justify-center gap-5">
-								<FaPencilAlt className="text-xl text-blue-500 cursor-pointer" />
-								<FaRegTrashAlt className="text-xl text-red-500 cursor-pointer" />
-							</TableCell>
-						</TableRow>
+						{address.map((addres, idx) => (
+							<TableRow key={addres.id}>
+								<TableCell>{idx + 1}</TableCell>
+								<TableCell>{addres.name}</TableCell>
+								<TableCell>{addres.phone}</TableCell>
+								<TableCell>{addres.addressLine} </TableCell>
+								<TableCell>{addres.city}</TableCell>
+								<TableCell>{addres.province}</TableCell>
+								<TableCell>{addres.postalCode}</TableCell>
+								<TableCell>{addres.postalCode}</TableCell>
+								<TableCell>{new Date(addres.createdAt).toLocaleString()}</TableCell>
+								<TableCell>{new Date(addres.updatedAt).toLocaleString()}</TableCell>
+								<TableCell className="flex justify-center gap-5">
+									<FaPencilAlt className="text-xl text-blue-500 cursor-pointer" />
+									<FaRegTrashAlt className="text-xl text-red-500 cursor-pointer" />
+								</TableCell>
+							</TableRow>
+						))}
 					</TableBody>
 				</Table>
 			</div>
