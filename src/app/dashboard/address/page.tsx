@@ -25,6 +25,34 @@ type Address = {
 
 export default function Page() {
 	const [address, setAddress] = useState<Address[]>([]);
+	const [name, setName] = useState('');
+	const [phone, setPhone] = useState('');
+	const [addressLine, setAddressLine] = useState('');
+	const [city, setCity] = useState('');
+	const [province, setProvince] = useState('');
+	const [postalCode, setPostalCode] = useState('');
+	const [notes, setNotes] = useState('');
+
+	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault();
+		try {
+			const payload = { name, phone, addressLine, city, province, postalCode, notes };
+			const res = await axios.post('/api/address', payload);
+			const data = res.data.data;
+			setAddress((prev) => [...prev, data]);
+			alert(res.data.message);
+			setName('')
+			setPhone('')
+			setAddressLine('')
+			setCity('')
+			setProvince('')
+			setPostalCode('')
+			setNotes('')
+		} catch (err) {
+			console.error(err);
+			alert('failed add address');
+		}
+	}
 
 	useEffect(() => {
 		const getAddress = async () => {
@@ -39,54 +67,59 @@ export default function Page() {
 		<div className="container mx-auto my-10">
 			<div className="flex justify-between">
 				<h1>address page</h1>
-				<Dialog>
-					<DialogTrigger asChild>
-						<Button>Add address</Button>
-					</DialogTrigger>
-					<DialogContent className="max-h-[95vh]">
-						<DialogHeader>
-							<DialogTitle>Add Address</DialogTitle>
-						</DialogHeader>
-						<div className="grid gap-4 max-h-[60vh] overflow-y-scroll p-2 ">
-							<div className="grid gap-3">
-								<Label htmlFor="name">Name</Label>
-								<Input id="name" name="name" />
-							</div>
-							<div className="grid gap-3">
-								<Label htmlFor="phone">Phone</Label>
-								<Input id="phone" name="phone" />
-							</div>
-							<div className="grid gap-3">
-								<Label htmlFor="address">address line</Label>
-								<Input id="address" name="address" />
-							</div>
-							<div className="w-full grid grid-cols-2 gap-5">
-								<div className="grid gap-3">
-									<Label htmlFor="city">city</Label>
-									<Input id="city" name="city" />
+				<div>
+					<Dialog>
+						<DialogTrigger asChild>
+							<Button>Add address</Button>
+						</DialogTrigger>
+						<DialogContent className="max-h-[95vh]">
+							<form onSubmit={handleSubmit}>
+								<DialogHeader>
+									<DialogTitle>Add Address</DialogTitle>
+								</DialogHeader>
+
+								<div className="grid gap-4 max-h-[60vh] overflow-y-scroll p-2 ">
+									<div className="grid gap-3">
+										<Label htmlFor="name">Name</Label>
+										<Input id="name" name="name" value={name} onChange={(e) => setName(e.target.value)} required />
+									</div>
+									<div className="grid gap-3">
+										<Label htmlFor="phone">Phone</Label>
+										<Input id="phone" name="phone" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+									</div>
+									<div className="grid gap-3">
+										<Label htmlFor="address">address line</Label>
+										<Input id="address" name="address" value={addressLine} onChange={(e) => setAddressLine(e.target.value)} required />
+									</div>
+									<div className="w-full grid grid-cols-2 gap-5">
+										<div className="grid gap-3">
+											<Label htmlFor="city">city</Label>
+											<Input id="city" name="city" value={city} onChange={(e) => setCity(e.target.value)} required />
+										</div>
+										<div className="grid gap-3">
+											<Label htmlFor="province">province</Label>
+											<Input id="province" name="province" value={province} onChange={(e) => setProvince(e.target.value)} required />
+										</div>
+									</div>
+									<div className="grid gap-3">
+										<Label htmlFor="postal">postal code</Label>
+										<Input id="postal" name="postal" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} required />
+									</div>
+									<div className="grid gap-3">
+										<Label htmlFor="notes">notes</Label>
+										<Input id="notes" name="notes" value={notes} onChange={(e) => setNotes(e.target.value)} required />
+									</div>
 								</div>
-								<div className="grid gap-3">
-									<Label htmlFor="province">province</Label>
-									<Input id="province" name="province" />
-								</div>
-							</div>
-							<div className="grid gap-3">
-								<Label htmlFor="postal">postal code</Label>
-								<Input id="postal" name="postal" />
-							</div>
-							<div className="grid gap-3">
-								<Label htmlFor="notes">notes</Label>
-								<Input id="notes" name="notes" />
-							</div>
-						</div>
-						<DialogFooter>
-							<DialogClose asChild>
-								<Button variant="outline">Cancel</Button>
-							</DialogClose>
-							<Button type="submit">Save changes</Button>
-						</DialogFooter>
-					</DialogContent>
-				</Dialog>
+								<DialogFooter>
+									<DialogClose asChild>
+										<Button variant="outline">Cancel</Button>
+									</DialogClose>
+									<Button type="submit">Save changes</Button>
+								</DialogFooter>
+							</form>
+						</DialogContent>
+					</Dialog>
+				</div>
 			</div>
 			<div>
 				<Table>
