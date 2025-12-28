@@ -4,7 +4,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { FaPencilAlt, FaRegTrashAlt } from 'react-icons/fa';
 import { Button } from '@/components/ui/button';
-import { DialogClose } from '@radix-ui/react-dialog';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '@/components/ui/input';
 import { useEffect, useState } from 'react';
@@ -32,15 +31,25 @@ export default function Page() {
 	const [province, setProvince] = useState('');
 	const [postalCode, setPostalCode] = useState('');
 	const [notes, setNotes] = useState('');
+	const [editing, setEditing] = useState<Address | null>(null);
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 		try {
 			const payload = { name, phone, addressLine, city, province, postalCode, notes };
-			const res = await axios.post('/api/address', payload);
-			const data = res.data.data;
-			setAddress((prev) => [...prev, data]);
-			alert(res.data.message);
+			if (editing) {
+				const res = await axios.patch(`/api/address/${editing.id}`, payload);
+				const data = res.data.data;
+				setAddress((prev) => prev.map((p) => (p.id === editing.id ? data : p)));
+				setEditing(null);
+				alert(res.data.message);
+			} else {
+				const res = await axios.post('/api/address', payload);
+				const data = res.data.data;
+				setAddress((prev) => [...prev, data]);
+				alert(res.data.message);
+			}
 			setName('');
 			setPhone('');
 			setAddressLine('');
@@ -48,9 +57,10 @@ export default function Page() {
 			setProvince('');
 			setPostalCode('');
 			setNotes('');
+			setIsDialogOpen(false);
 		} catch (err) {
 			console.error(err);
-			alert('failed add address');
+			alert('failed add/edit address');
 		}
 	}
 
@@ -61,6 +71,30 @@ export default function Page() {
 		} catch (err) {
 			console.error('delete failed', err);
 		}
+	}
+
+	async function handleEdit(address: Address) {
+		setEditing(address);
+		setName(address.name);
+		setPhone(address.phone);
+		setAddressLine(address.addressLine);
+		setCity(address.city);
+		setProvince(address.province);
+		setPostalCode(address.postalCode ?? '');
+		setNotes(address.notes ?? '');
+		setIsDialogOpen(true);
+	}
+
+	function handleAddNew() {
+		setEditing(null);
+		setName('');
+		setPhone('');
+		setAddressLine('');
+		setCity('');
+		setProvince('');
+		setPostalCode('');
+		setNotes('');
+		setIsDialogOpen(true);
 	}
 
 	useEffect(() => {
@@ -77,14 +111,14 @@ export default function Page() {
 			<div className="flex justify-between">
 				<h1>address page</h1>
 				<div>
-					<Dialog>
+					<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
 						<DialogTrigger asChild>
-							<Button>Add address</Button>
+							<Button onClick={handleAddNew}>Add address</Button>
 						</DialogTrigger>
 						<DialogContent className="max-h-[95vh]">
 							<form onSubmit={handleSubmit}>
 								<DialogHeader>
-									<DialogTitle>Add Address</DialogTitle>
+									<DialogTitle>{editing ? 'Edit Address' : 'Add Address'}</DialogTitle>
 								</DialogHeader>
 
 								<div className="grid gap-4 max-h-[60vh] overflow-y-scroll p-2 ">
@@ -120,10 +154,10 @@ export default function Page() {
 									</div>
 								</div>
 								<DialogFooter>
-									<DialogClose asChild>
-										<Button variant="outline">Cancel</Button>
-									</DialogClose>
-									<Button type="submit">Save changes</Button>
+									<Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+										Cancel
+									</Button>
+									<Button type="submit">{editing ? 'Update' : 'Save'}</Button>
 								</DialogFooter>
 							</form>
 						</DialogContent>
@@ -157,11 +191,11 @@ export default function Page() {
 								<TableCell>{addres.city}</TableCell>
 								<TableCell>{addres.province}</TableCell>
 								<TableCell>{addres.postalCode}</TableCell>
-								<TableCell>{addres.postalCode}</TableCell>
+								<TableCell>{addres.notes}</TableCell>
 								<TableCell>{new Date(addres.createdAt).toLocaleString()}</TableCell>
 								<TableCell>{new Date(addres.updatedAt).toLocaleString()}</TableCell>
 								<TableCell className="flex justify-center gap-5">
-									<FaPencilAlt className="text-xl text-blue-500 cursor-pointer" />
+									<FaPencilAlt className="text-xl text-blue-500 cursor-pointer" onClick={() => handleEdit(addres)} />
 									<FaRegTrashAlt className="text-xl text-red-500 cursor-pointer" onClick={() => handleDelete(addres.id)} />
 								</TableCell>
 							</TableRow>
