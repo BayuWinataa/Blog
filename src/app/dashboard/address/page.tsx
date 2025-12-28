@@ -41,16 +41,25 @@ export default function Page() {
 			const data = res.data.data;
 			setAddress((prev) => [...prev, data]);
 			alert(res.data.message);
-			setName('')
-			setPhone('')
-			setAddressLine('')
-			setCity('')
-			setProvince('')
-			setPostalCode('')
-			setNotes('')
+			setName('');
+			setPhone('');
+			setAddressLine('');
+			setCity('');
+			setProvince('');
+			setPostalCode('');
+			setNotes('');
 		} catch (err) {
 			console.error(err);
 			alert('failed add address');
+		}
+	}
+
+	async function handleDelete(id: number) {
+		try {
+			await axios.delete(`/api/address/${id}`);
+			setAddress((prev) => prev.filter((p) => p.id !== id));
+		} catch (err) {
+			console.error('delete failed', err);
 		}
 	}
 
@@ -153,7 +162,7 @@ export default function Page() {
 								<TableCell>{new Date(addres.updatedAt).toLocaleString()}</TableCell>
 								<TableCell className="flex justify-center gap-5">
 									<FaPencilAlt className="text-xl text-blue-500 cursor-pointer" />
-									<FaRegTrashAlt className="text-xl text-red-500 cursor-pointer" />
+									<FaRegTrashAlt className="text-xl text-red-500 cursor-pointer" onClick={() => handleDelete(addres.id)} />
 								</TableCell>
 							</TableRow>
 						))}
